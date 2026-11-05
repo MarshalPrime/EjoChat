@@ -1,0 +1,81 @@
+# Kinyarwanda CMS mixture, token budgets from AfriqueLLM Table 8.
+# Counts are Gemma 3 tokens, matching the paper. Targets are the UniMax
+# caps, not the raw crawl sizes. Kinyarwanda is repeated up to its UniMax
+# cap. English and French are replay buffers so CPT does not wipe them.
+# Code and math are the CornStack-Python and FineMath-4+ anchors.
+
+tokenizer: google/gemma-3-4b-pt
+seed: 2025
+shard_docs: 100000
+
+components:
+  - name: kin_mono
+    target_tokens: 1070793848
+    upsample: true
+    sources:
+      - kind: fineweb2
+        dataset: HuggingFaceFW/fineweb-2
+        config: kin_Latn
+        split: train
+        max_tokens: 136010710
+      - kind: jsonl
+        url: https://huggingface.co/datasets/castorini/wura/resolve/main/documents-v1.0/train/kin.jsonl
+        text_fields: [headline, content]
+        max_tokens: 69028912
+      - kind: madlad
+        language: rw
+        split: clean
+        max_tokens: 275720285
+
+  - name: eng_replay
+    target_tokens: 1070793848
+    upsample: false
+    sources:
+      - kind: jsonl
+        url: https://huggingface.co/datasets/castorini/wura/resolve/main/documents-v1.0/train/eng.jsonl
+        text_fields: [headline, content]
+        max_tokens: 865600280
+      - kind: fineweb
+        dataset: HuggingFaceFW/fineweb
+        config: sample-10BT
+        split: train
+        max_tokens: 1070793848
+
+  - name: fra_replay
+    target_tokens: 1070793848
+    upsample: false
+    sources:
+      - kind: jsonl
+        url: https://huggingface.co/datasets/castorini/wura/resolve/main/documents-v1.0/train/fra.jsonl
+        text_fields: [headline, content]
+        max_tokens: 815336425
+      - kind: fineweb2
+        dataset: HuggingFaceFW/fineweb-2
+        config: fra_Latn
+        split: train
+        max_tokens: 1070793848
+
+  - name: finemath
+    target_tokens: 1067549046
+    upsample: false
+    sources:
+      - kind: finemath
+        dataset: HuggingFaceTB/finemath
+        config: finemath-4plus
+        split: train
+        max_tokens: 1067549046
+
+  - name: cornstack
+    target_tokens: 967399767
+    upsample: false
+    sources:
+      - kind: cornstack
+        dataset: nomic-ai/cornstack-python-v1
+        max_tokens: 967399767
+
+  # This file builds the five large CMS pieces. Add the rest before training:
+  #   python -m ejochat.data.add_written_kin          # Gazette and health sentences
+  #   python -m ejochat.data.synthetic prepare        # English source for translation
+  #   python -m ejochat.data.synthetic gemini         # Kinyarwanda synthetic text
+  # Local books and news are a separate collection. See docs/article.md.
+  # EjoChat chats stay out of continued pre-training.

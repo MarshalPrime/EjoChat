@@ -1,0 +1,14 @@
+#!/bin/bash
+set -euxo pipefail
+export DEBIAN_FRONTEND=noninteractive
+apt-get update
+apt-get install -y tmux git python3-venv python3-pip unzip
+if ! command -v aws >/dev/null 2>&1; then
+  curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
+  unzip -q /tmp/awscliv2.zip -d /tmp
+  /tmp/aws/install
+fi
+mkdir -p /opt/ejochat
+chown ubuntu:ubuntu /opt/ejochat
+sudo -u ubuntu aws s3 sync "s3://${bucket}/code/" /opt/ejochat/ || true
+chown -R ubuntu:ubuntu /opt/ejochat

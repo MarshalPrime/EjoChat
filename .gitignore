@@ -1,0 +1,26 @@
+.cache/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+outputs/
+logs/
+checkpoints/
+wandb/
+
+# Built datasets stay out of git. The recipes and the description are enough.
+data/mixture/
+data/mixture-*/
+data/synthetic/
+data/Datasets/
+preprocessed_data/
+hf-cache/
+
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.*
+infra/crash.log
+infra/terraform.tfvars
+infra/override.tf
+secrets.env

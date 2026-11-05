@@ -1,0 +1,6 @@
+-r requirements-data.txt
+transformers>=4.51
+llamafactory
+deepspeed
+liger-kernel
+flash-attn
